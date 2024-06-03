@@ -9,6 +9,14 @@ from utils.torch import *
 
 class VAE(nn.Module):
     def __init__(self, nx, ny, nz, horizon, specs):
+        '''
+        Args:
+            nx: traj_dim (history)
+            ny: traj_dim (future)
+            nz: cfg.nz
+            horizon: cfg.t_pred
+            specs: specs
+        '''
         super(VAE, self).__init__()
         self.nx = nx
         self.ny = ny

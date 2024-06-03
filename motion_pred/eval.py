@@ -97,6 +97,7 @@ def compute_diversity(pred, *args):
 
 def compute_ade(pred, gt, *args):
     diff = pred - gt
+    temp = np.linalg.norm(diff, axis=2)
     dist = np.linalg.norm(diff, axis=2).mean(axis=1)
     return dist.min()
 
@@ -140,6 +141,7 @@ def compute_stats():
         gt_multi = traj_gt_arr[i]
         for algo in algos:
             pred = get_prediction(data, algo, sample_num=cfg.nk, num_seeds=num_seeds, concat_hist=False)
+            pred = pred[:, :5]
             for stats in stats_names:
                 val = 0
                 for pred_i in pred:
@@ -185,8 +187,8 @@ if __name__ == '__main__':
 
     all_algos = ['dlow', 'vae']
     parser = argparse.ArgumentParser()
-    parser.add_argument('--cfg', default=None)
-    parser.add_argument('--mode', default='vis')
+    parser.add_argument('--cfg', default='h36m_nsamp50')
+    parser.add_argument('--mode', default='stats')
     parser.add_argument('--data', default='test')
     parser.add_argument('--action', default='all')
     parser.add_argument('--num_seeds', type=int, default=1)

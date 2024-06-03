@@ -55,14 +55,15 @@ def train(epoch):
 if __name__ == '__main__':
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('--cfg', default=None)
+    parser.add_argument('--cfg', default="h36m_nsamp10")
+    # parser.add_argument('--cfg', default=None)
     parser.add_argument('--mode', default='train')
     parser.add_argument('--test', action='store_true', default=False)
     parser.add_argument('--iter', type=int, default=0)
     parser.add_argument('--seed', type=int, default=0)
     parser.add_argument('--gpu_index', type=int, default=0)
     args = parser.parse_args()
-
+    
     """setup"""
     np.random.seed(args.seed)
     torch.manual_seed(args.seed)
