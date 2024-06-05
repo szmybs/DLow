@@ -66,22 +66,17 @@ def get_gt(data):
 
 
 def visualize():
-    traj_idx = [0, 5, 10, 15, 20, 25, 30, 35, 40, 45]
     total_num = 0
 
-    vis_skeleton = VisSkeleton(parents=[-1, 0, 1, 2, 3, 4, 0, 6, 7, 8, 9, 0, 11, 12, 13, 14, 12,
-                                        16, 17, 18, 19, 20, 19, 22, 12, 24, 25, 26, 27, 28, 27, 30],
-                                joints_left=[6, 7, 8, 9, 10, 16, 17, 18, 19, 20, 21, 22, 23],
-                                joints_right=[1, 2, 3, 4, 5, 24, 25, 26, 27, 28, 29, 30, 31])  
-    removed_joints = {4, 5, 9, 10, 11, 16, 20, 21, 22, 23, 24, 28, 29, 30, 31}
-    vis_skeleton.remove_joints(removed_joints)
-    vis_skeleton.adjust_connection_manually(([11, 8], [14, 8]))
+    vis_skeleton = VisSkeleton(parents=[-1, 0, 1, 2, 3, 1, 5, 6, 0, 8, 9, 0, 11, 12, 1],
+                                joints_left=[2, 3, 4, 8, 9, 10],
+                                joints_right=[5, 6, 7, 11, 12, 13])
 
     if args.action != 'all':
         save_subdir = list(args.action)[0]
     else:
         save_subdir = args.action
-    save_dir = os.path.join(os.getcwd(), 'output/imgs/', save_subdir)
+    save_dir = os.path.join(os.getcwd(), 'output/imgs/HumanEva', save_subdir)
     if not os.path.exists(save_dir):
         os.makedirs(save_dir)
     print("save_dir:" + str(save_dir))
@@ -97,19 +92,18 @@ def visualize():
                 continue
             
             pred = get_prediction(data, algo, sample_num=cfg.nk, num_seeds=num_seeds, concat_hist=False)
-            # pred = pred[:, traj_idx]
             
-            pz = np.zeros(shape=(pred.shape[0], pred.shape[1], pred.shape[2], 51))
+            pz = np.zeros(shape=(pred.shape[0], pred.shape[1], pred.shape[2], 45))
             pz[..., 3:] = pred
-            pz = np.reshape(pz, newshape=(pz.shape[0], pz.shape[1], pz.shape[2], 17, 3))
+            pz = np.reshape(pz, newshape=(pz.shape[0], pz.shape[1], pz.shape[2], 15, 3))
             
-            gz = np.zeros(shape=(gt.shape[0], gt.shape[1], 51))
+            gz = np.zeros(shape=(gt.shape[0], gt.shape[1], 45))
             gz[..., 3:] = gt
-            gz = np.reshape(gz, newshape=(gz.shape[0], gz.shape[1], 17, 3))
+            gz = np.reshape(gz, newshape=(gz.shape[0], gz.shape[1], 15, 3))
 
             for j in range(pz.shape[0]):
                 pos_mixtures = []
-                for k in range(len(traj_idx)):
+                for k in range(10):
                     pos_mixtures.append(pz[j, k, -1, :, :])
                 
                 plt_row_independent_save(
@@ -119,13 +113,13 @@ def visualize():
                     mixtures = pos_mixtures,
                     type = "3D",
                     lcolor = "#3498db", rcolor = "#e74c3c",
-                    # view = (90, -180, -90),
-                    view = (0, -180, -90),
+                    view = (0, 0, 0),
+                    # view = (0, -180, -90),
                     titles = None,
                     add_labels = False, 
                     only_pose = True,
                     save_dir = save_dir, 
-                    save_name = str(total_num)
+                    save_name = 'DLOW'+'_'+str(total_num)
                 )
                 total_num += 1
 
@@ -135,13 +129,13 @@ def visualize():
 if __name__ == '__main__':
     all_algos = ['dlow', 'vae']
     parser = argparse.ArgumentParser()
-    parser.add_argument('--cfg', default='h36m_nsamp10')
+    parser.add_argument('--cfg', default='humaneva_nsamp10')
     parser.add_argument('--mode', default='stats')
     parser.add_argument('--data', default='test')
     parser.add_argument('--action', default='all')
     parser.add_argument('--num_seeds', type=int, default=1)
     parser.add_argument('--multimodal_threshold', type=float, default=0.5)
-    parser.add_argument('--seed', type=int, default=0)
+    parser.add_argument('--seed', type=int, default=123)
     parser.add_argument('--gpu_index', type=int, default=-1)
     for algo in all_algos:
         parser.add_argument('--iter_%s' % algo, type=int, default=None)

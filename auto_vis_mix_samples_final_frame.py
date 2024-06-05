@@ -5,9 +5,8 @@ if __name__ == "__main__":
 
 
 actions = [
-    # 'walking', 'sitting', 'eating', 'posing', 'smoking', 'phoning'
-    # 'sitting', 'eating', 'posing', 'smoking', 'phoning'
-    'posing', 'phoning'
+    'walking', 'sitting', 'eating', 'smoking',
+    # 'posing', 'phoning'
 ]
 
 for action in actions:
