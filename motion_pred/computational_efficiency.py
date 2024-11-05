@@ -4,6 +4,10 @@ import os
 import sys
 import pickle
 import csv
+import torch
+import time
+from thop import profile
+from thop import clever_format
 from scipy.spatial.distance import pdist
 
 sys.path.append(os.getcwd())
@@ -46,6 +50,54 @@ def get_prediction(data, algo, sample_num, num_seeds=1, concat_hist=True):
     else:
         Y = Y[None, ...]
     return Y
+
+
+
+class OneDlow(torch.nn.Module):
+    def __init__(self, dlow, vae, sample_num, nk):
+        super().__init__()
+        self.dlow = dlow
+        self.vae = vae
+        self.sample_num = sample_num
+        self.nk = nk
+    
+    def forward(self, X):
+        X = X.repeat((1, 1, 1))
+        Z_g = self.dlow.sample(X)
+        X = X.repeat_interleave(self.nk, dim=1)
+        Y = self.vae.decode(X, Z_g)
+        return Y
+    
+    
+def compute_efficiency():
+    data_gen = dataset.iter_generator(step=cfg.t_his)
+    input = None
+    for i, data in enumerate(data_gen):
+        input = data
+            
+    input = input[..., 1:, :].reshape(input.shape[0], input.shape[1], -1)
+    input = tensor(input, device=device, dtype=dtype).permute(1, 0, 2).contiguous()
+    input = input[:t_his]
+        
+    dlow_one = OneDlow(models['dlow'], models['vae'], 50, 50)
+    macs, params = profile(dlow_one, inputs=(input,))
+    macs, params = clever_format([macs, params], "%.3f")
+    print("flops = ", macs * 2) 
+    print("params = ", params)
+    
+    print('warm up ... \n')
+    for _ in range(10):
+        start = time.time()
+        outputs = dlow_one(input)
+        torch.cuda.synchronize()
+        end = time.time()
+        print('Time:{}ms'.format((end-start)*1000))
+
+    with torch.autograd.profiler.profile(enabled=True, use_cuda=True, record_shapes=False, profile_memory=False) as prof:
+        outputs = dlow_one(input)
+    print(prof.key_averages().table(sort_by="cuda_time_total"))       
+        
+    
 
 
 def visualize():
@@ -184,17 +236,16 @@ def get_multimodal_gt():
 
 
 if __name__ == '__main__':
-
     all_algos = ['dlow', 'vae']
     parser = argparse.ArgumentParser()
-    parser.add_argument('--cfg', default='h36m_nsamp10')
+    parser.add_argument('--cfg', default='h36m_nsamp50')
     parser.add_argument('--mode', default='stats')
     parser.add_argument('--data', default='test')
     parser.add_argument('--action', default='all')
     parser.add_argument('--num_seeds', type=int, default=1)
     parser.add_argument('--multimodal_threshold', type=float, default=0.5)
     parser.add_argument('--seed', type=int, default=0)
-    parser.add_argument('--gpu_index', type=int, default=-1)
+    parser.add_argument('--gpu_index', type=int, default=0)
     for algo in all_algos:
         parser.add_argument('--iter_%s' % algo, type=int, default=None)
     args = parser.parse_args()
@@ -254,4 +305,5 @@ if __name__ == '__main__':
     if args.mode == 'vis':
         visualize()
     elif args.mode == 'stats':
-        compute_stats()
+        # compute_stats()
+        compute_efficiency()

@@ -2,10 +2,11 @@ import sys
 import os
 import argparse
 import pickle
+from thop import profile
+from thop import clever_format
 
 if __name__ == "__main__":
     sys.path.append(os.getcwd())
-    sys.path.append('./Motion')
 
 import torch
 import numpy as np
