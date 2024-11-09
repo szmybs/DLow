@@ -24,7 +24,7 @@ from motion_pred.utils.dataset_h36m import DatasetH36M
 from motion_pred.utils.dataset_humaneva import DatasetHumanEva
 from models.motion_pred import *
 
-from visualization.vis_pose import plt_row, plt_row_independent_save
+from visualization.vis_pose import plt_row, plt_row_independent_save, plt_row_mixtures
 from visualization.vis_skeleton import VisSkeleton
 
 
@@ -100,7 +100,12 @@ def visualize():
             gz = np.zeros(shape=(gt.shape[0], gt.shape[1], 45))
             gz[..., 3:] = gt
             gz = np.reshape(gz, newshape=(gz.shape[0], gz.shape[1], 15, 3))
+            
+            y = pz[:, :, [11, 23, 35, 47, 59]]
+            y = np.swapaxes(y, 1, 2)
+            x_pred = gz[:, [11, 23, 35, 47, 59]]
 
+            '''
             for j in range(pz.shape[0]):
                 pos_mixtures = []
                 for k in range(10):
@@ -120,6 +125,42 @@ def visualize():
                     only_pose = True,
                     save_dir = save_dir, 
                     save_name = 'DLOW'+'_'+str(total_num)
+                )
+                total_num += 1
+            '''
+
+            for j in range(y.shape[0]):
+                mixtures_lists = []
+                for p in range(y.shape[1]):
+                    mixtures_lists.append([])
+                    for q in range(y.shape[2]):
+                        mixtures_lists[p].append(y[j, p, q])
+                
+                plt_row_mixtures(
+                    skeleton = vis_skeleton,
+                    pose = mixtures_lists,
+                    type = "3D",
+                    lcolor = "#3498db", rcolor = "#e74c3c",
+                    view = (0, 0, 0),
+                    titles = None,
+                    add_labels = False, 
+                    only_pose = True,
+                    save_dir = save_dir, 
+                    save_name = 'DLOW_' + str(total_num) + '_mix'
+                )
+
+                poses = [x_pred[j,k] for k in range(x_pred.shape[1])]
+                plt_row_mixtures(
+                    skeleton = vis_skeleton,
+                    pose = poses,
+                    type = "3D",
+                    lcolor = "#3498db", rcolor = "#e74c3c",
+                    view = (0, 0, 0),
+                    titles = None,
+                    add_labels = False, 
+                    only_pose = True,
+                    save_dir = save_dir, 
+                    save_name = 'DLOW_' + str(total_num)
                 )
                 total_num += 1
 

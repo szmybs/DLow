@@ -58,12 +58,13 @@ def show2Dpose(skeleton, pose, ax, lcolor="#3498db", rcolor="#e74c3c", add_label
 
 
 def show3Dpose(skeleton, pose, ax, max_radius, lcolor="#3498db", rcolor="#e74c3c", alpha=1.0, lw=2.0,
-              add_labels=False, only_pose=False): # blue, orange
+              add_labels=False, only_pose=False, **kwargs): # blue, orange
     parents = skeleton._parents
     connections = parents[1:]
     
     JL, JR = skeleton._joints_left, skeleton._joints_right
-    xy_radius, z_radius = max_radius
+    # xy_radius, z_radius = max_radius
+    xy_radius, z_radius = 0.85, 0.85
     
     '''
     pose = np.squeeze(pose)
@@ -264,3 +265,61 @@ def plt_row_independent_save(skeleton, pose, mixtures=None, type="3D", lcolor="#
         plt.savefig(os.path.join(save_dir, name), pad_inches=0.0, bbox_inches='tight')
         plt.close()
     return      
+
+
+
+def plt_row_mixtures(skeleton, pose, type="3D", lcolor="#3498db", rcolor="#e74c3c", 
+                     view=(0, 90), alpha=1.0, lw=2.0,
+                     titles=None, add_labels=False, only_pose=False, save_dir=None, save_name=None, **kwargs):
+    if not isinstance(pose, list):
+        pose = list(pose) 
+    cols = len(pose)
+    
+    if "dpi" in kwargs:
+        fig = plt.figure(figsize=[3*cols, 6], dpi=kwargs["dpi"])
+    else:
+        fig = plt.figure(figsize=[3*cols, 6], dpi=200)
+      
+    if "vis_points" in kwargs:
+        vis_points = kwargs["vis_points"]
+    else:
+        vis_points = None
+    
+    if "alphas" in kwargs:
+        alphas = kwargs["alphas"]
+    else:
+        alphas = 1.0
+    
+    pose_np = np.array(pose)
+    pose_np = np.reshape(pose_np, newshape=(-1, pose_np.shape[-2], pose_np.shape[-1]))
+    xy_radius_max, z_radius_max = coordinates_alignment(pose_np.tolist())
+    
+    for i in range(1, cols+1):
+        if type == '3D':
+          ax = fig.add_subplot(1, cols, i, projection='3d')
+          
+          if isinstance(pose[i-1], list):
+            for j, m in enumerate(pose[i-1]):
+              m_alpha = alphas[i-1][j] if isinstance(alphas, list) else alphas
+              show3Dpose(skeleton, m, ax, (xy_radius_max, z_radius_max), lcolor=lcolor, rcolor=rcolor, alpha=m_alpha, lw=lw, \
+                        add_labels=add_labels, only_pose=only_pose, vis_points=vis_points, fig=fig)            
+            
+          else:
+            show3Dpose(skeleton, pose[i-1], ax, (xy_radius_max, z_radius_max), lcolor=lcolor, rcolor=rcolor, alpha=alpha, lw=lw, \
+                       add_labels=add_labels, only_pose=only_pose)
+        else:
+          pass            
+                    
+        if titles is not None:
+            ax.set_title(titles[i-1], fontsize=10)
+        ax.view_init(view[0], view[1])
+    
+    # plt.tight_layout()
+    plt.subplots_adjust(left=0.0, right=1.0, bottom=0.0, top=1.0, wspace=0.0, hspace=0.0)
+    
+    if save_dir is None or save_name is None:
+        plt.show()
+    else:
+        plt.savefig(os.path.join(save_dir, save_name), pad_inches=0.0, bbox_inches='tight')
+        plt.close()
+    return
