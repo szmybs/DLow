@@ -221,6 +221,22 @@ def compute_stats():
             pred = get_prediction(data, algo, sample_num=cfg.nk, num_seeds=num_seeds, concat_hist=False) # (1, 50, 60, 42)
             pred = np.reshape(pred, newshape=(pred.shape[0], pred.shape[1], pred.shape[2], -1, 3))
             '''
+            
+            '''
+            kde_time_list = []
+            kde(y=gt, y_pred=pred)
+            for _ in range(20):
+                start = time.time()
+                kde(y=gt, y_pred=pred)
+                torch.cuda.synchronize()
+                end = time.time()
+                print('Time:{}ms'.format((end-start)*1000))
+                kde_time_list.append((end-start)*1000)
+            kde_time = np.array(kde_time_list)
+            kde_time_mean = np.mean(kde_time)
+            kde_time_std = np.std(kde_time)
+            '''
+                
             kde_list.append(kde(y=gt, y_pred=pred))
     kde_ll = torch.cat(kde_list, dim=0)
     kde_ll = torch.mean(kde_ll, dim=0)
@@ -327,6 +343,7 @@ if __name__ == '__main__':
     all_algos = ['dlow', 'vae']
     parser = argparse.ArgumentParser()
     parser.add_argument('--cfg', default='humaneva_nsamp50')
+    # parser.add_argument('--cfg', default='h36m_nsamp50')
     parser.add_argument('--mode', default='stats')
     parser.add_argument('--data', default='test')
     parser.add_argument('--action', default='all')

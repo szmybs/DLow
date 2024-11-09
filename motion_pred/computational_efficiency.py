@@ -86,16 +86,22 @@ def compute_efficiency():
     print("params = ", params)
     
     print('warm up ... \n')
-    for _ in range(10):
+    runtime_cost_list = []
+    for _ in range(100):
         start = time.time()
         outputs = dlow_one(input)
         torch.cuda.synchronize()
         end = time.time()
         print('Time:{}ms'.format((end-start)*1000))
+        runtime_cost_list.append((end-start)*1000)
+    runtime_cost = np.array(runtime_cost_list)
+    runtime_mean, runtime_std = np.mean(runtime_cost), np.std(runtime_cost)
+    print(runtime_mean)
+    print(runtime_std)
 
-    with torch.autograd.profiler.profile(enabled=True, use_cuda=True, record_shapes=False, profile_memory=False) as prof:
-        outputs = dlow_one(input)
-    print(prof.key_averages().table(sort_by="cuda_time_total"))       
+    # with torch.autograd.profiler.profile(enabled=True, use_cuda=True, record_shapes=False, profile_memory=False) as prof:
+    #     outputs = dlow_one(input)
+    # print(prof.key_averages().table(sort_by="cuda_time_total"))       
         
     
 
@@ -238,7 +244,8 @@ def get_multimodal_gt():
 if __name__ == '__main__':
     all_algos = ['dlow', 'vae']
     parser = argparse.ArgumentParser()
-    parser.add_argument('--cfg', default='h36m_nsamp50')
+    # parser.add_argument('--cfg', default='h36m_nsamp50')
+    parser.add_argument('--cfg', default='humaneva_nsamp50')
     parser.add_argument('--mode', default='stats')
     parser.add_argument('--data', default='test')
     parser.add_argument('--action', default='all')
