@@ -87,7 +87,7 @@ def compute_efficiency():
     
     print('warm up ... \n')
     runtime_cost_list = []
-    for _ in range(100):
+    for _ in range(1000):
         start = time.time()
         outputs = dlow_one(input)
         torch.cuda.synchronize()
