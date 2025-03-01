@@ -16,7 +16,7 @@ class DatasetH36M(Dataset):
             self.traj_dim += 3
 
     def prepare_data(self):
-        self.data_file = os.path.join('data', 'data_3d_h36m_noglobal.npz')
+        self.data_file = os.path.join('data', 'data_3d_h36m_old.npz')
         self.subjects_split = {'train': [1, 5, 6, 7, 8],
                                'test': [9, 11]}
         # self.subjects_split = {'train': [1, 5, 6, 7, 8],
@@ -60,6 +60,17 @@ class DatasetH36M(Dataset):
                     seq = np.concatenate((seq, v), axis=1)
                 data_s[action] = seq
         self.data = data_f
+
+    def iter_generator(self, step=25, afg=False):
+        for data_s in self.data.values():
+            for act, seq in data_s.items():
+                seq_len = seq.shape[0]
+                for i in range(0, seq_len - self.t_total, step):
+                    traj = seq[None, i: i + self.t_total]
+                    if afg:
+                        yield traj, act
+                    else:
+                        yield traj
 
 
 if __name__ == '__main__':

@@ -209,9 +209,12 @@ def FID_test(classifier):
 
 
 def CMD_test():
-    idx_to_class = ['directions', 'discussion', 'eating', 'greeting', 'phoning', \
-                    'posing', 'purchases', 'sitting', 'sittingdown', 'smoking',  \
-                    'photo', 'waiting', 'walking', 'walkdog', 'walktogether']
+    # idx_to_class = ['directions', 'discussion', 'eating', 'greeting', 'phoning', \
+    #                 'posing', 'purchases', 'sitting', 'sittingdown', 'smoking',  \
+    #                 'photo', 'waiting', 'walking', 'walkdog', 'walktogether']
+    idx_to_class = ['Directions', 'Discussion', 'Eating', 'Greeting', 'Phoning', \
+                    'Posing', 'Purchases', 'Sitting', 'SittingDown', 'Smoking',  \
+                    'Photo', 'Waiting', 'Walking', 'WalkDog', 'WalkTogether']
     mean_motion_per_class = [0.004528946212615328, 0.005068199383505345, 0.003978791804673771,  0.005921345536787865,   0.003595039379111546, 
                             0.004192961478268034, 0.005664689143238568, 0.0024945400286369122, 0.003543066357658834,   0.0035990843311130487, 
                             0.004356865838457266, 0.004219841185066826, 0.007528046315984569,  0.00007054820734533077, 0.006751761745020258]  
@@ -342,9 +345,9 @@ if __name__ == '__main__':
 
     all_algos = ['dlow', 'vae']
     parser = argparse.ArgumentParser()
-    # parser.add_argument('--cfg', default='h36m_nsamp10')
-    parser.add_argument('--cfg', default='humaneva_nsamp50')
-    parser.add_argument('--mode', default='CMD')
+    parser.add_argument('--cfg', default='h36m_nsamp10')
+    # parser.add_argument('--cfg', default='humaneva_nsamp50')
+    parser.add_argument('--mode', default='FID')
     parser.add_argument('--data', default='test')
     parser.add_argument('--action', default='all')
     parser.add_argument('--num_seeds', type=int, default=1)
