@@ -209,12 +209,12 @@ def FID_test(classifier):
 
 
 def CMD_test():
-    # idx_to_class = ['directions', 'discussion', 'eating', 'greeting', 'phoning', \
-    #                 'posing', 'purchases', 'sitting', 'sittingdown', 'smoking',  \
-    #                 'photo', 'waiting', 'walking', 'walkdog', 'walktogether']
-    idx_to_class = ['Directions', 'Discussion', 'Eating', 'Greeting', 'Phoning', \
-                    'Posing', 'Purchases', 'Sitting', 'SittingDown', 'Smoking',  \
-                    'Photo', 'Waiting', 'Walking', 'WalkDog', 'WalkTogether']
+    idx_to_class = ['directions', 'discussion', 'eating', 'greeting', 'phoning', \
+                    'posing', 'purchases', 'sitting', 'sittingdown', 'smoking',  \
+                    'photo', 'waiting', 'walking', 'walkdog', 'walktogether']
+    # idx_to_class = ['Directions', 'Discussion', 'Eating', 'Greeting', 'Phoning', \
+    #                 'Posing', 'Purchases', 'Sitting', 'SittingDown', 'Smoking',  \
+    #                 'Photo', 'Waiting', 'Walking', 'WalkDog', 'WalkTogether']
     mean_motion_per_class = [0.004528946212615328, 0.005068199383505345, 0.003978791804673771,  0.005921345536787865,   0.003595039379111546, 
                             0.004192961478268034, 0.005664689143238568, 0.0024945400286369122, 0.003543066357658834,   0.0035990843311130487, 
                             0.004356865838457266, 0.004219841185066826, 0.007528046315984569,  0.00007054820734533077, 0.006751761745020258]  
@@ -245,7 +245,7 @@ def CMD_test():
     num_seeds = 1
 
     M_list, label_list = [], []
-    for data, _, action in data_gen:
+    for data, action in data_gen:
         for algo in algos:
             if algo == 'vae':
                 continue
@@ -256,7 +256,8 @@ def CMD_test():
             gt = get_gt(data)
             
             pred = get_prediction(data, algo, sample_num=cfg.nk, num_seeds=num_seeds, concat_hist=False)
-            pred = pred[:, (5, 15, 25, 35, 45)]
+            pred = pred.reshape(1, 10, 100, 16, 3)
+            pred = pred[:, (2, 4, 6, 8, 0)]
             
             M = CMD_helper(pred)
             M_list.append(M)
